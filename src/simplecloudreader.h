@@ -16,6 +16,7 @@ class SimpleCloudReader
 public:
     SimpleCloudReader();
     bool accumulatePointsFromTxtPointCloud(const std::string &filename);
+//    bool accumulatePointsFromTxtPointCloudRapid(const std::string &filename);
     void getDemeanedPointCloud(const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZI> > cloud);
     PointXYZI getShift();
 

@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Set up the QVTK window for Point Cloud
     viewer_.reset (new pcl::visualization::PCLVisualizer ("Voxelizer", false));
-    viewer_->setBackgroundColor (0.4, 0.4, 0.4);
+    viewer_->setBackgroundColor (0.2, 0.2, 0.2);
     ui->widget_main->SetRenderWindow (viewer_->getRenderWindow ());
     viewer_->setupInteractor (ui->widget_main->GetInteractor (), ui->widget_main->GetRenderWindow ());
     viewer_->setShowFPS(false);
@@ -53,10 +53,10 @@ void MainWindow::dropEvent(QDropEvent *event)
 
     foreach (const QUrl &url, mimeData->urls()) {
        QString fileName = url.toLocalFile();
-       qDebug() << "Dropped file:" << fileName;
+       qDebug() << "[MainWindow] Dropped file:" << fileName;
        if(QFileInfo(fileName).completeSuffix()=="txt"){
            scr.accumulatePointsFromTxtPointCloud(fileName.toUtf8().constData());
-           qDebug() << "Accumulating a point cloud.";
+           qDebug() << "[MainWindow] Accumulating a txt point cloud.";
            qApp->processEvents();
            ui->statusBar->showMessage("Loading " + QFileInfo(fileName).baseName());
        }
@@ -76,4 +76,5 @@ void MainWindow::updatePointCloudView()
     viewer_->addPointCloud<pcl::PointXYZI>(cloud_, handler, "MergedCloud");
     viewer_->resetCamera ();
     ui->widget_main->update ();
+    qDebug() << "[MainWindow] Updated point cloud view.";
 }
