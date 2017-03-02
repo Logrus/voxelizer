@@ -1,0 +1,4 @@
+# Ignore Qt project files
+*.user
+# Ignore build folder
+build/ 

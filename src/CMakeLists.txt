@@ -1,0 +1,20 @@
+find_package(PCL REQUIRED)
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+
+find_package(VTK REQUIRED)
+
+set(VOXELIZER_H simplecloudreader.h)
+set(VOXELIZER_CPP simplecloudreader.cpp)
+set(VOXELIZER_QT_H mainwindow.h)
+set(VOXELIZER_QT_UI mainwindow.ui)
+set(VOXELIZER_QT_CPP mainwindow.cpp)
+find_package (Qt5Widgets REQUIRED)
+find_package (Qt5Core REQUIRED)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+QT5_WRAP_CPP (GUI_HEADERS_MOC   ${VOXELIZER_QT_H})
+QT5_WRAP_UI  (GUI_FORMS_HEADERS ${VOXELIZER_QT_UI})
+
+add_executable(voxelizer main.cpp ${VOXELIZER_QT_CPP} ${GUI_HEADERS_MOC} ${GUI_FORMS_HEADERS} ${VOXELIZER_CPP})
+target_link_libraries(voxelizer ${PCL_LIBRARIES} Qt5::Widgets Qt5::Core ${VTK_LIBRARIES})
