@@ -5,8 +5,8 @@ add_definitions(${PCL_DEFINITIONS})
 
 find_package(VTK REQUIRED)
 
-set(VOXELIZER_H simplecloudreader.h)
-set(VOXELIZER_CPP simplecloudreader.cpp)
+set(VOXELIZER_H simplecloudreader.h voxelgrid.h)
+set(VOXELIZER_CPP simplecloudreader.cpp voxelgrid.cpp)
 set(VOXELIZER_QT_H mainwindow.h)
 set(VOXELIZER_QT_UI mainwindow.ui)
 set(VOXELIZER_QT_CPP mainwindow.cpp)
