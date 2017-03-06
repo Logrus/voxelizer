@@ -5,6 +5,11 @@ add_definitions(${PCL_DEFINITIONS})
 
 find_package(VTK REQUIRED)
 
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
 set(VOXELIZER_H simplecloudreader.h voxelgrid.h)
 set(VOXELIZER_CPP simplecloudreader.cpp voxelgrid.cpp)
 set(VOXELIZER_QT_H mainwindow.h)

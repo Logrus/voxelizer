@@ -114,28 +114,22 @@ void MainWindow::on_btn_voxelize_clicked()
     vg.setGridResolution(ui->spinBox_xdim->value(),ui->spinBox_ydim->value(),ui->spinBox_zdim->value());
     qDebug() << "[MainWindow] Initializing voxel grid.";
     vg.computeOccupancy();
+    qDebug() << "[MainWindow] Computed occupancy.";
     auto res = vg.getXYZResolution();
     auto ls  = vg.getLeafSize();
     vtkSmartPointer < vtkAppendPolyData > treeWireframe = vtkSmartPointer<vtkAppendPolyData>::New ();
 
-    for (int z = 0; z < res[2]; ++z){
-        for (int y = 0; y < res[1]; ++y){
-            for (int x = 0; x < res[0]; ++x){
-                //qApp->processEvents();
-                bool isoccupied;
-                auto xyz = vg.getCentroid(isoccupied,x,y,z);
-                if(isoccupied){
-                    vtkSmartPointer < vtkCubeSource > cube = vtkSmartPointer<vtkCubeSource>::New ();
-                    cube->SetBounds (xyz[0]-(ls[0]/2),xyz[0]+(ls[0]/2),xyz[1]-(ls[1]/2),xyz[1]+(ls[1]/2),xyz[2]-(ls[2]/2),xyz[2]+(ls[2]/2));
-                    cube->Update();
-                    treeWireframe->AddInputData (cube->GetOutput ());
-                    voxel_id++;
-                }
-            }
-        }
+    // Go through all occupied voxels
+    while(vg.hasOccupiedVoxels()){
+        auto xyz = vg.getNextOccupiedCentroid();
+        qApp->processEvents();
+        vtkSmartPointer < vtkCubeSource > cube = vtkSmartPointer<vtkCubeSource>::New ();
+        cube->SetBounds (xyz[0]-(ls[0]/2),xyz[0]+(ls[0]/2),xyz[1]-(ls[1]/2),xyz[1]+(ls[1]/2),xyz[2]-(ls[2]/2),xyz[2]+(ls[2]/2));
+        cube->Update();
+        treeWireframe->AddInputData (cube->GetOutput ());
     }
-    treeWireframe->Update();
 
+    treeWireframe->Update();
     vtkSmartPointer<vtkPolyData> input =
        vtkSmartPointer<vtkPolyData>::New();
      input->ShallowCopy(treeWireframe->GetOutput());
@@ -165,7 +159,9 @@ void MainWindow::on_btn_reset_clicked()
 
 void MainWindow::on_spinBox_xdim_valueChanged(int arg1)
 {
-    ui->spinBox_ydim->setValue(arg1);
-    ui->spinBox_zdim->setValue(arg1);
-    on_btn_voxelize_clicked();
+    if(ui->checkBox_dynamicUpdate->isChecked()){
+        ui->spinBox_ydim->setValue(arg1);
+        ui->spinBox_zdim->setValue(arg1);
+        on_btn_voxelize_clicked();
+    }
 }

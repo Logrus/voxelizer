@@ -32,11 +32,15 @@ void VoxelGrid::setGridResolution(int xres, int yres, int zres)
     z_leafsize_ = static_cast<float>(z_max_-z_min_)/z_res_;
     std::cout << "[VoxelGrid] x_res_ " << x_res_ << " y_res_ " << y_res_ << " z_res_ " << z_res_ << std::endl;
     std::cout << "[VoxelGrid] x_leafsize_ " << x_leafsize_ << " y_leafsize_ " << y_leafsize_ << " z_leafsize_ " << z_leafsize_ << std::endl;
-    occupancy_.resize(x_res_*y_res_*z_res_, false);
+    //occupancy_.resize(x_res_*y_res_*z_res_, false);
 }
 
 void VoxelGrid::computeOccupancy()
 {
+    // FIXME: omp can write to the same memory, but that shouldn't be a huge problem, thougth it's not nice
+//    omp_lock_t writelock;
+//    omp_init_lock(&writelock);
+//#pragma omp parallel for
     for(int i=0; i<cloud_->points.size(); ++i){
         pcl::PointXYZI pt = cloud_->points[i];
         //std::cout << "[VoxelGrid] pt " << pt << std::endl;
@@ -44,8 +48,33 @@ void VoxelGrid::computeOccupancy()
         int ycoord = static_cast<int>((pt.y - y_min_)/y_leafsize_);
         int zcoord = static_cast<int>((pt.z - z_min_)/z_leafsize_);
         //std::cout << "[VoxelGrid] xcoord " << xcoord << " ycoord " << ycoord << " zcoord " << zcoord << std::endl;
+        //omp_set_lock(&writelock);
         occupancy_[idx3(xcoord, ycoord, zcoord)] = true;
+        //omp_unset_lock(&writelock);
     }
+    //omp_destroy_lock(&writelock);
+    it_ = occupancy_.begin();
+}
+
+void VoxelGrid::resetIterator()
+{
+    it_ = occupancy_.begin();
+}
+
+bool VoxelGrid::hasOccupiedVoxels()
+{
+    return (it_ != occupancy_.end());
+}
+
+Eigen::Vector3f VoxelGrid::getNextOccupiedCentroid()
+{
+    update3dIdx();
+    Eigen::Vector3f voxel_center;
+    voxel_center[0] = x_min_ + currx_ * x_leafsize_;
+    voxel_center[1] = y_min_ + curry_ * y_leafsize_;
+    voxel_center[2] = z_min_ + currz_ * z_leafsize_;
+    ++it_;
+    return voxel_center;
 }
 
 void VoxelGrid::setBoundingBox(float x_min, float x_max, float y_min, float y_max, float z_min, float z_max)
@@ -104,3 +133,12 @@ int VoxelGrid::idx3(int x, int y, int z)
 {
     return x+(y+z*y_res_)*x_res_;
 }
+
+void VoxelGrid::update3dIdx()
+{
+    int i = it_->first;
+    currx_ = i % z_res_;
+    curry_ = (i / z_res_) % y_res_;
+    currz_ = i / (y_res_ * z_res_);
+}
+
