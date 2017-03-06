@@ -1,0 +1,14 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ Changelog for voxelizer
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 
+0.2.0 (2017-03-03)
+------------------
+ * Visualization and Voxel Grid optimization. Visualization now runs on GPU, voxel grid checks only occupied cells.
+ * Contributors: Vladislav Tananaev
+
+0.1.0 (2017-03-03)
+------------------
+ * First version. Allows to load txt point clouds that are contain space separated values for x y z intensity
+ * Contributors: Vladislav Tananaev
+

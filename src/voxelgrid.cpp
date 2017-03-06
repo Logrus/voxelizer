@@ -32,27 +32,17 @@ void VoxelGrid::setGridResolution(int xres, int yres, int zres)
     z_leafsize_ = static_cast<float>(z_max_-z_min_)/z_res_;
     std::cout << "[VoxelGrid] x_res_ " << x_res_ << " y_res_ " << y_res_ << " z_res_ " << z_res_ << std::endl;
     std::cout << "[VoxelGrid] x_leafsize_ " << x_leafsize_ << " y_leafsize_ " << y_leafsize_ << " z_leafsize_ " << z_leafsize_ << std::endl;
-    //occupancy_.resize(x_res_*y_res_*z_res_, false);
 }
 
 void VoxelGrid::computeOccupancy()
 {
-    // FIXME: omp can write to the same memory, but that shouldn't be a huge problem, thougth it's not nice
-//    omp_lock_t writelock;
-//    omp_init_lock(&writelock);
-//#pragma omp parallel for
     for(int i=0; i<cloud_->points.size(); ++i){
         pcl::PointXYZI pt = cloud_->points[i];
-        //std::cout << "[VoxelGrid] pt " << pt << std::endl;
         int xcoord = static_cast<int>((pt.x - x_min_)/x_leafsize_);
         int ycoord = static_cast<int>((pt.y - y_min_)/y_leafsize_);
         int zcoord = static_cast<int>((pt.z - z_min_)/z_leafsize_);
-        //std::cout << "[VoxelGrid] xcoord " << xcoord << " ycoord " << ycoord << " zcoord " << zcoord << std::endl;
-        //omp_set_lock(&writelock);
         occupancy_[idx3(xcoord, ycoord, zcoord)] = true;
-        //omp_unset_lock(&writelock);
     }
-    //omp_destroy_lock(&writelock);
     it_ = occupancy_.begin();
 }
 

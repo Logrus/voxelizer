@@ -89,7 +89,6 @@ void MainWindow::updatePointCloudView()
     viewer_->removeAllPointClouds();
     pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZI> handler(cloud_,"intensity");
     viewer_->addPointCloud<pcl::PointXYZI>(cloud_, handler, "MergedCloud");
-    //viewer_->resetCamera ();
     ui->widget_main->update ();
     qDebug() << "[MainWindow] Updated point cloud view.";
 }
@@ -122,7 +121,6 @@ void MainWindow::on_btn_voxelize_clicked()
     // Go through all occupied voxels
     while(vg.hasOccupiedVoxels()){
         auto xyz = vg.getNextOccupiedCentroid();
-        qApp->processEvents();
         vtkSmartPointer < vtkCubeSource > cube = vtkSmartPointer<vtkCubeSource>::New ();
         cube->SetBounds (xyz[0]-(ls[0]/2),xyz[0]+(ls[0]/2),xyz[1]-(ls[1]/2),xyz[1]+(ls[1]/2),xyz[2]-(ls[2]/2),xyz[2]+(ls[2]/2));
         cube->Update();
@@ -139,11 +137,9 @@ void MainWindow::on_btn_voxelize_clicked()
      triangleFilter->Update();
 
     vtkSmartPointer < vtkPolyDataMapper > mapper = vtkSmartPointer<vtkPolyDataMapper>::New ();
-    //mapper->SetInputConnection(treeWireframe->GetOutputPort());
     mapper->SetInputConnection(triangleFilter->GetOutputPort());
     treeActor = vtkSmartPointer<vtkLODActor>::New ();
     treeActor->SetMapper(mapper);
-    //treeActor->GetProperty ()->SetColor (1, 0, 0);
     viewer_->getRendererCollection()->GetFirstRenderer()->AddActor (treeActor);
 
     qDebug() << "[MainWindow] Finished adding voxels. ";

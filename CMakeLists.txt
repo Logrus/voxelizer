@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 project(voxelizer)
-set(voxelizer_VERSION 0.1)
+set(voxelizer_VERSION 0.2)
 
 add_definitions(-std=c++11)
 
