@@ -10,6 +10,12 @@
 
 // VTK
 #include <vtkRenderWindow.h>
+#include <vtkCubeSource.h>
+#include <vtkNamedColors.h>
+#include <vtkConeSource.h>
+#include <vtkCleanPolyData.h>
+#include <vtkDecimatePro.h>
+#include <vtkTriangleFilter.h>
 
 // PCL
 #include <pcl/filters/voxel_grid_occlusion_estimation.h>
@@ -88,8 +94,17 @@ void MainWindow::updatePointCloudView()
     qDebug() << "[MainWindow] Updated point cloud view.";
 }
 
+vtkSmartPointer<vtkPolyData>
+getCuboid (double minX, double maxX, double minY, double maxY, double minZ, double maxZ)
+{
+  vtkSmartPointer < vtkCubeSource > cube = vtkSmartPointer<vtkCubeSource>::New ();
+  cube->SetBounds (minX, maxX, minY, maxY, minZ, maxZ);
+  return cube->GetOutput ();
+}
+
 void MainWindow::on_btn_voxelize_clicked()
 {
+    viewer_->getRendererCollection()->GetFirstRenderer()->RemoveActor(treeActor);
     viewer_->removeAllShapes();
     viewer_->removeAllPointClouds();
     qDebug() << "[MainWindow] Creating voxel grid.";
@@ -101,6 +116,7 @@ void MainWindow::on_btn_voxelize_clicked()
     vg.computeOccupancy();
     auto res = vg.getXYZResolution();
     auto ls  = vg.getLeafSize();
+    vtkSmartPointer < vtkAppendPolyData > treeWireframe = vtkSmartPointer<vtkAppendPolyData>::New ();
 
     for (int z = 0; z < res[2]; ++z){
         for (int y = 0; y < res[1]; ++y){
@@ -109,14 +125,35 @@ void MainWindow::on_btn_voxelize_clicked()
                 bool isoccupied;
                 auto xyz = vg.getCentroid(isoccupied,x,y,z);
                 if(isoccupied){
-                    viewer_->addCube(xyz[0]-(ls[0]/2),xyz[0]+(ls[0]/2),xyz[1]-(ls[1]/2),xyz[1]+(ls[1]/2),xyz[2]-(ls[2]/2),xyz[2]+(ls[2]/2),1,1,1,"vox" + std::to_string(voxel_id));
+                    vtkSmartPointer < vtkCubeSource > cube = vtkSmartPointer<vtkCubeSource>::New ();
+                    cube->SetBounds (xyz[0]-(ls[0]/2),xyz[0]+(ls[0]/2),xyz[1]-(ls[1]/2),xyz[1]+(ls[1]/2),xyz[2]-(ls[2]/2),xyz[2]+(ls[2]/2));
+                    cube->Update();
+                    treeWireframe->AddInputData (cube->GetOutput ());
                     voxel_id++;
                 }
             }
         }
     }
+    treeWireframe->Update();
+
+    vtkSmartPointer<vtkPolyData> input =
+       vtkSmartPointer<vtkPolyData>::New();
+     input->ShallowCopy(treeWireframe->GetOutput());
+     vtkSmartPointer<vtkTriangleFilter> triangleFilter =
+         vtkSmartPointer<vtkTriangleFilter>::New();
+     triangleFilter->SetInputData(input);
+     triangleFilter->Update();
+
+    vtkSmartPointer < vtkPolyDataMapper > mapper = vtkSmartPointer<vtkPolyDataMapper>::New ();
+    //mapper->SetInputConnection(treeWireframe->GetOutputPort());
+    mapper->SetInputConnection(triangleFilter->GetOutputPort());
+    treeActor = vtkSmartPointer<vtkLODActor>::New ();
+    treeActor->SetMapper(mapper);
+    //treeActor->GetProperty ()->SetColor (1, 0, 0);
+    viewer_->getRendererCollection()->GetFirstRenderer()->AddActor (treeActor);
+
     qDebug() << "[MainWindow] Finished adding voxels. ";
-    //viewer_->setRepresentationToSurfaceForAllActors();
+    viewer_->setRepresentationToSurfaceForAllActors();
     ui->widget_main->update ();
 }
 
@@ -130,4 +167,5 @@ void MainWindow::on_spinBox_xdim_valueChanged(int arg1)
 {
     ui->spinBox_ydim->setValue(arg1);
     ui->spinBox_zdim->setValue(arg1);
+    on_btn_voxelize_clicked();
 }

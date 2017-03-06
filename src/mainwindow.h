@@ -42,6 +42,8 @@ private:
     int voxel_id;
 
     void updatePointCloudView();
+
+    vtkSmartPointer < vtkLODActor > treeActor;
 };
 
 #endif // MAINWINDOW_H

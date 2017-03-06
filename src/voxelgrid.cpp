@@ -40,9 +40,9 @@ void VoxelGrid::computeOccupancy()
     for(int i=0; i<cloud_->points.size(); ++i){
         pcl::PointXYZI pt = cloud_->points[i];
         //std::cout << "[VoxelGrid] pt " << pt << std::endl;
-        int xcoord = static_cast<int>((pt.x + (x_leafsize_/2.0f) - x_min_)/x_leafsize_);
-        int ycoord = static_cast<int>((pt.y + (y_leafsize_/2.0f) - y_min_)/y_leafsize_);
-        int zcoord = static_cast<int>((pt.z + (z_leafsize_/2.0f) - z_min_)/z_leafsize_);
+        int xcoord = static_cast<int>((pt.x - x_min_)/x_leafsize_);
+        int ycoord = static_cast<int>((pt.y - y_min_)/y_leafsize_);
+        int zcoord = static_cast<int>((pt.z - z_min_)/z_leafsize_);
         //std::cout << "[VoxelGrid] xcoord " << xcoord << " ycoord " << ycoord << " zcoord " << zcoord << std::endl;
         occupancy_[idx3(xcoord, ycoord, zcoord)] = true;
     }
@@ -76,9 +76,9 @@ Eigen::Vector3f VoxelGrid::getCentroid(bool &is_occupied, int x, int y, int z)
 {
     is_occupied = occupancy_[idx3(x,y,z)];
     Eigen::Vector3f voxel_center;
-    voxel_center[0] = x_min_ + x * x_leafsize_ - (x_leafsize_/2.0f);
-    voxel_center[1] = y_min_ + y * y_leafsize_ - (y_leafsize_/2.0f);
-    voxel_center[2] = z_min_ + z * z_leafsize_ - (z_leafsize_/2.0f);
+    voxel_center[0] = x_min_ + x * x_leafsize_;
+    voxel_center[1] = y_min_ + y * y_leafsize_;
+    voxel_center[2] = z_min_ + z * z_leafsize_;
     return voxel_center;
 }
 
