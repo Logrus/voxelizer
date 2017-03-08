@@ -151,7 +151,6 @@ void MainWindow::on_btn_voxelize_clicked()
 
     qDebug() << "[MainWindow] Finished adding voxels. ";
     viewer_->setRepresentationToSurfaceForAllActors();
-    viewer_->getRendererCollection()->GetFirstRenderer()->SetUseShadows(1);
     ui->widget_main->update ();
 }
 
