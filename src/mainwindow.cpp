@@ -157,6 +157,7 @@ void MainWindow::on_btn_voxelize_clicked()
 
 void MainWindow::on_btn_reset_clicked()
 {
+    viewer_->getRendererCollection()->GetFirstRenderer()->RemoveActor(treeActor);
     viewer_->removeAllShapes();
     updatePointCloudView();
 }
