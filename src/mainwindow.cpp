@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <ctime>
+
 // QT
 #include <QDropEvent>
 #include <QDebug>
@@ -112,13 +114,15 @@ void MainWindow::on_btn_voxelize_clicked()
 
     vg.setGridResolution(ui->spinBox_xdim->value(),ui->spinBox_ydim->value(),ui->spinBox_zdim->value());
     qDebug() << "[MainWindow] Initializing voxel grid.";
+    clock_t start = clock();
     vg.computeOccupancy();
-    qDebug() << "[MainWindow] Computed occupancy.";
+    qDebug() << "[MainWindow] Computed occupancy in " << (clock()-start)/(double)CLOCKS_PER_SEC << " sec.";
     auto res = vg.getXYZResolution();
     auto ls  = vg.getLeafSize();
     vtkSmartPointer < vtkAppendPolyData > treeWireframe = vtkSmartPointer<vtkAppendPolyData>::New ();
 
     // Go through all occupied voxels
+    start = clock();
     while(vg.hasOccupiedVoxels()){
         auto xyz = vg.getNextOccupiedCentroid();
         vtkSmartPointer < vtkCubeSource > cube = vtkSmartPointer<vtkCubeSource>::New ();
@@ -126,7 +130,9 @@ void MainWindow::on_btn_voxelize_clicked()
         cube->Update();
         treeWireframe->AddInputData (cube->GetOutput ());
     }
+    qDebug() << "[MainWindow] Went through occupied voxels " << (clock()-start)/(double)CLOCKS_PER_SEC << " sec.";
 
+    start = clock();
     treeWireframe->Update();
     vtkSmartPointer<vtkPolyData> input =
        vtkSmartPointer<vtkPolyData>::New();
@@ -141,9 +147,11 @@ void MainWindow::on_btn_voxelize_clicked()
     treeActor = vtkSmartPointer<vtkLODActor>::New ();
     treeActor->SetMapper(mapper);
     viewer_->getRendererCollection()->GetFirstRenderer()->AddActor (treeActor);
+    qDebug() << "[MainWindow] For triangulation and adding new actor " << (clock()-start)/(double)CLOCKS_PER_SEC << " sec.";
 
     qDebug() << "[MainWindow] Finished adding voxels. ";
     viewer_->setRepresentationToSurfaceForAllActors();
+    viewer_->getRendererCollection()->GetFirstRenderer()->SetUseShadows(1);
     ui->widget_main->update ();
 }
 
