@@ -9,18 +9,13 @@
 #include <QMimeData>
 #include <QDragEnterEvent>
 #include <QFileInfo>
+#include <QUrl>
 
 // VTK
 #include <vtkRenderWindow.h>
 #include <vtkCubeSource.h>
-#include <vtkNamedColors.h>
-#include <vtkConeSource.h>
 #include <vtkCleanPolyData.h>
-#include <vtkDecimatePro.h>
 #include <vtkTriangleFilter.h>
-
-// PCL
-#include <pcl/filters/voxel_grid_occlusion_estimation.h>
 
 // Project
 #include "voxelgrid.h"
@@ -128,7 +123,11 @@ void MainWindow::on_btn_voxelize_clicked()
         vtkSmartPointer < vtkCubeSource > cube = vtkSmartPointer<vtkCubeSource>::New ();
         cube->SetBounds (xyz[0]-(ls[0]/2),xyz[0]+(ls[0]/2),xyz[1]-(ls[1]/2),xyz[1]+(ls[1]/2),xyz[2]-(ls[2]/2),xyz[2]+(ls[2]/2));
         cube->Update();
+#if VTK_MAJOR_VERSION <= 5
+        treeWireframe->AddInput (cube->GetOutput ());
+#else
         treeWireframe->AddInputData (cube->GetOutput ());
+#endif
     }
     qDebug() << "[MainWindow] Went through occupied voxels " << (clock()-start)/(double)CLOCKS_PER_SEC << " sec.";
 
@@ -139,7 +138,11 @@ void MainWindow::on_btn_voxelize_clicked()
      input->ShallowCopy(treeWireframe->GetOutput());
      vtkSmartPointer<vtkTriangleFilter> triangleFilter =
          vtkSmartPointer<vtkTriangleFilter>::New();
+#if VTK_MAJOR_VERSION <= 5
+     triangleFilter->SetInput(input);
+#else
      triangleFilter->SetInputData(input);
+#endif
      triangleFilter->Update();
 
     vtkSmartPointer < vtkPolyDataMapper > mapper = vtkSmartPointer<vtkPolyDataMapper>::New ();
