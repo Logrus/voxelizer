@@ -20,7 +20,8 @@
 #include <vtkTriangleFilter.h>
 
 // PCL
-#include <pcl/filters/voxel_grid_occlusion_estimation.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/io/ply_io.h>
 
 // Project
 #include "voxelgrid.h"
@@ -64,6 +65,7 @@ void MainWindow::dropEvent(QDropEvent *event)
     const QMimeData *mimeData = event->mimeData();
 
     SimpleCloudReader scr;
+    pcl::PCLPointCloud2::Ptr tmp_cloud(new pcl::PCLPointCloud2);
 
     foreach (const QUrl &url, mimeData->urls()) {
        QString fileName = url.toLocalFile();
@@ -74,12 +76,35 @@ void MainWindow::dropEvent(QDropEvent *event)
            qApp->processEvents();
            ui->statusBar->showMessage("Loading " + QFileInfo(fileName).baseName());
        }
+       if(QFileInfo(fileName).completeSuffix()=="pcd"){
+           if (pcl::io::loadPCDFile(fileName.toUtf8().constData(), *tmp_cloud) == -1) //* load the file
+           {
+               qWarning() << "Couldn't read file " << fileName;
+               return;
+           }
+           pcl::fromPCLPointCloud2(*tmp_cloud, *cloud_);
+       }
+
+       if(QFileInfo(fileName).completeSuffix()=="ply"){
+           if (pcl::io::loadPLYFile(fileName.toUtf8().constData(), *tmp_cloud) == -1) //* load the file
+           {
+               qWarning() << "Couldn't read file " << fileName;
+               return;
+           }
+           pcl::fromPCLPointCloud2(*tmp_cloud, *cloud_);
+       }
+
+       if(QFileInfo(fileName).completeSuffix()=="labels"){
+           //scr.loadLabels(fileName.toUtf8().constData());
+       }
     }
     qDebug() << "[MainWindow] Finished processing files.";
     ui->statusBar->showMessage("Finished processing files.");
-    scr.getDemeanedPointCloud(cloud_);
-    shift_ = scr.getShift();
 
+    if(!scr.cloud_.empty()){
+        scr.getDemeanedPointCloud(cloud_);
+        shift_ = scr.getShift();
+    }
 
     updatePointCloudView();
     viewer_->resetCamera ();
@@ -89,7 +114,8 @@ void MainWindow::dropEvent(QDropEvent *event)
 void MainWindow::updatePointCloudView()
 {
     viewer_->removeAllPointClouds();
-    pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZI> handler(cloud_,"intensity");
+    //pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZI> handler(cloud_,"intensity");
+    pcl::visualization::PointCloudColorHandlerRandom<pcl::PointXYZI> handler(cloud_);
     viewer_->addPointCloud<pcl::PointXYZI>(cloud_, handler, "MergedCloud");
     ui->widget_main->update ();
     qDebug() << "[MainWindow] Updated point cloud view.";

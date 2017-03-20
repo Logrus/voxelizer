@@ -16,12 +16,11 @@ class SimpleCloudReader
 public:
     SimpleCloudReader();
     bool accumulatePointsFromTxtPointCloud(const std::string &filename);
-//    bool accumulatePointsFromTxtPointCloudRapid(const std::string &filename);
     void getDemeanedPointCloud(const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZI> > cloud);
     PointXYZI getShift();
+    std::vector<PointXYZI> cloud_;
 
 protected:
-    std::vector<PointXYZI> cloud_;
     PointXYZI shift;
 };
 
