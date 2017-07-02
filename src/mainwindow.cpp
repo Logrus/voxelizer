@@ -68,13 +68,13 @@ void MainWindow::dropEvent(QDropEvent *event)
     foreach (const QUrl &url, mimeData->urls()) {
        QString fileName = url.toLocalFile();
        qDebug() << "[MainWindow] Dropped file:" << fileName;
-       if(QFileInfo(fileName).completeSuffix()=="txt"){
+       if(QFileInfo(fileName).suffix()=="txt"){
            scr.accumulatePointsFromTxtPointCloud(fileName.toUtf8().constData());
            qDebug() << "[MainWindow] Accumulating a txt point cloud.";
            qApp->processEvents();
            ui->statusBar->showMessage("Loading " + QFileInfo(fileName).baseName());
        }
-       if(QFileInfo(fileName).completeSuffix()=="pcd"){
+       if(QFileInfo(fileName).suffix()=="pcd"){
            if (pcl::io::loadPCDFile(fileName.toUtf8().constData(), *tmp_cloud) == -1) //* load the file
            {
                qWarning() << "Couldn't read file " << fileName;
@@ -83,7 +83,7 @@ void MainWindow::dropEvent(QDropEvent *event)
            pcl::fromPCLPointCloud2(*tmp_cloud, *cloud_);
        }
 
-       if(QFileInfo(fileName).completeSuffix()=="ply"){
+       if(QFileInfo(fileName).suffix()=="ply"){
            if (pcl::io::loadPLYFile(fileName.toUtf8().constData(), *tmp_cloud) == -1) //* load the file
            {
                qWarning() << "Couldn't read file " << fileName;
@@ -92,7 +92,7 @@ void MainWindow::dropEvent(QDropEvent *event)
            pcl::fromPCLPointCloud2(*tmp_cloud, *cloud_);
        }
 
-       if(QFileInfo(fileName).completeSuffix()=="labels"){
+       if(QFileInfo(fileName).suffix()=="labels"){
            //scr.loadLabels(fileName.toUtf8().constData());
        }
     }
